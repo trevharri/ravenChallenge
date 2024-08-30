@@ -1,67 +1,49 @@
-import json, re
-from collections import defaultdict
-TEST_PATH = "/Users/trevorharrington/Documents/trevorRavenChallenge/ravenChallenge/rt-feed"
-
-class FeedData:
-
-    def __init__(self, file_path):
-        self.lines_by_document_id = self.process_json_lines(file_path)
-        self.distinct_stories = len(self.lines_by_document_id.keys())
-
-    def process_json_lines(self, file_path):
-        lines_by_document_id = defaultdict(list)
-
-        with open(file_path, "r") as f:
-                data = f.readlines()
-                for line in data:
-                    line = json.loads(line.strip())
-                    lines_by_document_id[line["RP_DOCUMENT_ID"]].append(line)
-
-        return lines_by_document_id
-
-    def check_for_missing_records(self):
-        missing_data = []
-        unique_ids = set(self.lines_by_document_id.keys())
-
-        for document_id in unique_ids:
-            expected_record_count = self.lines_by_document_id[document_id][0]["DOCUMENT_RECORD_COUNT"]
-            expected_indices = set(range(1, expected_record_count + 1))
-            actual_entries = self.lines_by_document_id[document_id]
+from FeedData import FeedData
+import os
 
 
-            for entry in actual_entries:
-                if entry["DOCUMENT_RECORD_INDEX"] in expected_indices:
-                    expected_indices.remove(entry["DOCUMENT_RECORD_INDEX"])
+# file_name = input("Please enter the name of you data file")
+feed_data = FeedData("/Users/trevorharrington/Documents/trevorRavenChallenge/ravenChallenge/rt-feed")
+print(f"\n\nYour data file contains {feed_data.distinct_stories} distinct stories.\n\n")
+turn_off = False
+while  not turn_off:
+    print("Select an option: ")
+    print("[1] View list of all unique document ids")
+    print("[2] Check for documents with missing records")
+    print("[3] Validate individual entity id")
+    print('[4] Validate all entity ids for given document')
+    print("[5] Exit")
+    user_choice = input("\nPlease type a number 1-5 and hit enter: ")
 
-            if expected_indices:
-                missing_data.append({"id": document_id, "missing_documents": list(expected_indices)})
-        if len(missing_data) > 0:
-            return missing_data
+    if str(user_choice) == "5":
+        break
+    elif user_choice == "1":
+        for id in feed_data.lines_by_document_id.keys():
+            print(id)
+    elif user_choice == "2":
+        missing_records = feed_data.check_for_missing_records()
+        if missing_records:
+            for document in missing_records:
+                print(f'\nDocument {document["id"]} is missing records with index(s) {document["missing_documents"]}')
         else:
-            return False
+            print("No documents are missing records")
+    elif user_choice == "3":
+        entity_id = input("Please type the entity id and hit enter: ")
+        is_valid = feed_data.is_valid_rp_entity_id(entity_id)
+        if is_valid:
+            print("ID is valid")
+        else:
+            print("Id is invalid")
+    elif user_choice == "4":
+        document_id = input("Please type document id and hit enter: ")
+        invalid_ids = feed_data.validate_entity_ids_by_document(document_id)
+        if invalid_ids:
+            print(f"The following ids are invalid: {invalid_ids}")
+        else:
+            print("All ids are valid")
 
-    def is_valid_rp_entity_id(self, id_string):
-        if not isinstance(id_string, unicode): #need to replace unicode with str if run in py3
-            return False
-
-        pattern = r'^[A-Z0-9]{6}$'
-
-        return bool(re.match(pattern, id_string))
-
-    def validate_entity_ids_by_document(self, document_id):
-        invalid_entities = []
-        entities = self.lines_by_document_id[document_id]
-
-        for entity in entities:
-            if not self.is_valid_rp_entity_id(entity["RP_ENTITY_ID"]):
-                invalid_entities.append(entity["RP_ENTITY_ID"])
-
-        return invalid_entities
-
-
-feed_data = FeedData(TEST_PATH)
-print(feed_data.distinct_stories)
-missing_data = feed_data.check_for_missing_records()
-print(missing_data)
-invalid_entity_ids = feed_data.validate_entity_ids_by_document("13BBE4174A6F7149C0BE9345D57D469F")
-print(invalid_entity_ids)
+    user_continues = input("\nWould you like to continue? [y/n]: ")
+    if user_continues == "y":
+        os.system('cls' if os.name=='nt' else 'clear')
+    else:
+        turn_off = True
