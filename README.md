@@ -12,9 +12,10 @@ This repository contains a simple application that can be used to read a jsonlin
 ## Docker
 1. Unpack .rar file in a directory of your choice
 2. Copy the file path of the directory you choose
-3. Pull the `trevorRavenChallenge` docker image from docker hub
+3. Pull the docker image from docker hub (https://hub.docker.com/r/trevharri/challenge) with command:
+`docker pull trevharri/challenge`
 4. Run a docker container from that image and attach your data file directory using the command:
-`docker run -ti  -v /YOUR_COPIED_DIRECTORY_PATH:/data trevorRavenChallenge`
+`docker run -ti  -v /YOUR_COPIED_DIRECTORY_PATH:/data trevharri/challenge`
 5. Type the name of your data file (the one in`/YOUR_COPIED_DIRECTORY_PATH`)
 6. Follow the instructions in the terminal to view/validate data
 
