@@ -37,7 +37,8 @@ This class contains the bulk of our data validating logic.
 
 Upon initialization the `process_json_lines` method is called. This reads the data file line-by-line, deletes white spaces and then reorganizes the data into a dictionary where the keys are RP_DOCUMENT_IDs and the values are lists containing every line for that RP_DOCUMENT_ID.
 `{RP_DOCUMENT_ID1: [line1, line2 line3, ...], RP_DOCUMENT_ID2: [line1, line2, line3 ...], ...}`
-This is stored in the `lines_by_document_id` attribute.
+This is stored in the `lines_by_document_id` attribute. There is error handling to make sure the document exists, is readable, each line is json format and each line has the RP_DOCUMENT_ID key.
+
 The `distinct_stories` attribute sums the keys from `lines_by_document_id` to get a count of the unique documents.
 
 The `check_for_missing_records` method takes our `lines_by_document_id` dictionary, gets the keys and then iterates through each of them checking that there are records for every DOCUMENT_RECORD_INDEX in the DOCUMENT_RECORD_COUNT. To do this a set is created for each index in DOCUMENT_RECORD_INDEX. As we iterate through finding the records, thier indexes are removed from that set. After iterating through the set, if any missing indexs remain. The indexes and their respective document id are added to list which the method returns
