@@ -1,5 +1,7 @@
-import json, re
+import json
+import re
 from collections import defaultdict
+
 
 class FeedData:
 
@@ -9,13 +11,27 @@ class FeedData:
 
     def process_json_lines(self, file_path):
         lines_by_document_id = defaultdict(list)
-
-        with open(file_path, "r") as f:
-                data = f.readlines()
-                for line in data:
-                    line = json.loads(line.strip())
-                    lines_by_document_id[line["RP_DOCUMENT_ID"]].append(line)
-
+        try:
+            with open(file_path, "r") as f:
+                try:
+                    data = f.readlines()
+                    count = 1
+                    for line in data:
+                        try:
+                            line = json.loads(line.strip())
+                            document_id = line["RP_DOCUMENT_ID"]
+                            lines_by_document_id[document_id].append(line)
+                            count += 1
+                        except json.JSONDecodeError:
+                            print(f"Error decoding JSON in line: {count}  -- Line not processed")
+                        except KeyError as e:
+                            print(f"Missing key {e} in line: {count} -- Line not processed")
+                except Exception as e:
+                    print(f"An error occurred while reading the file: {e}")
+        except FileNotFoundError:
+            print(f"The file {file_path} does not exist.")
+        except IOError as e:
+            print(f"An I/O error occurred: {e}")
         return lines_by_document_id
 
     def check_for_missing_records(self):
